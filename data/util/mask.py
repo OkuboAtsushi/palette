@@ -123,6 +123,8 @@ def bbox2mask(img_shape, bbox, dtype='uint8'):
     return mask
 
 
+def  alpha2mask(img)
+
 def brush_stroke_mask(img_shape,
                       num_vertices=(4, 12),
                       mean_angle=2 * math.pi / 5,

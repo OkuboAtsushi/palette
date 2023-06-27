@@ -4,6 +4,7 @@ from PIL import Image
 import os
 import torch
 import numpy as np
+import cv2
 
 from .util.mask import (bbox2mask, brush_stroke_mask, get_irregular_mask, random_bbox, random_cropping_bbox)
 
@@ -53,7 +54,7 @@ class InpaintDataset(data.Dataset):
         ret = {}
         path = self.imgs[index]
         img = self.tfs(self.loader(path))
-        mask = self.get_mask()
+        mask = self.get_mask(path)
         cond_image = img*(1. - mask) + mask*torch.randn_like(img)
         mask_img = img*(1. - mask) + mask
 
@@ -67,7 +68,7 @@ class InpaintDataset(data.Dataset):
     def __len__(self):
         return len(self.imgs)
 
-    def get_mask(self):
+    def get_mask(self, img_path):
         if self.mask_mode == 'bbox':
             mask = bbox2mask(self.image_size, random_bbox())
         elif self.mask_mode == 'center':
@@ -83,6 +84,11 @@ class InpaintDataset(data.Dataset):
             mask = regular_mask | irregular_mask
         elif self.mask_mode == 'file':
             pass
+        elif self.mask_mode == 'use_alpha':
+            image = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
+            alpha_channel = image[:,:,3]
+            mask = np.where(alpha_channel==255, 0, 1)
+            mask = mask[:, :, np.newaxis]
         else:
             raise NotImplementedError(
                 f'Mask mode {self.mask_mode} has not been implemented.')
