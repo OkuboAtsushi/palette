@@ -86,6 +86,7 @@ class InpaintDataset(data.Dataset):
             pass
         elif self.mask_mode == 'use_alpha':
             image = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
+            image = cv2.resize(image, dsize=(self.image_size[0], self.image_size[1]), interpolation=cv2.INTER_CUBIC)
             alpha_channel = image[:,:,3]
             mask = np.where(alpha_channel==255, 0, 1)
             mask = mask[:, :, np.newaxis]
